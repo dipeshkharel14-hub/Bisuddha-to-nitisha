@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Happy Birthday, Nitisha 🌷</title>
+
+<!-- Tailwind (utility layout only — all bespoke visuals live in the <style> block below) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- GSAP for the orchestrated intro → dashboard transition and micro-interactions -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500;1,600&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg-0:#05070d;
+    --bg-1:#0a0f1c;
+    --bg-2:#0d1830;
+    --ocean:#0a1f33;
+    --glass: rgba(255,255,255,0.045);
+    --glass-strong: rgba(255,255,255,0.08);
+    --glass-border: rgba(255,255,255,0.14);
+    --pink:#ffb0cf;
+    --pink-deep:#ff85b3;
+    --purple:#c9aaf2;
+    --purple-deep:#a87bf0;
+    --gold:#f3d8a3;
+    --text:#f3f1fa;
+    --text-dim:#aba9c6;
+    --stem:#5fae7e;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background: radial-gradient(120% 90% at 50% -10%, var(--bg-2) 0%, var(--bg-1) 45%, var(--bg-0) 100%);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .font-display{ font-family:'Playfair Display', serif; }
+  .font-script{ font-family:'Cormorant Garamond', serif; }
+
+  /* ---------- Background canvas (tulips + sprinkles) ---------- */
+  #bg-canvas{
+    position:fixed; inset:0; width:100vw; height:100vh;
+    z-index:0; pointer-events:none;
+  }
+  .vignette{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background: radial-gradient(80% 60% at 50% 30%, transparent 0%, rgba(0,0,0,0.35) 75%, rgba(0,0,0,0.65) 100%);
+  }
+
+  /* ---------- Glass utility ---------- */
+  .glass{
+    background: linear-gradient(155deg, var(--glass), rgba(255,255,255,0.015));
+    border:1px solid var(--glass-border);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+
+  /* ---------- Intro screen ---------- */
+  #intro-screen{
+    position:fixed; inset:0; z-index:40;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; text-align:center; padding:24px;
+  }
+  .intro-eyebrow{
+    letter-spacing:0.35em; text-transform:uppercase; font-size:11px;
+    color: var(--text-dim); opacity:0; margin-bottom:18px;
+  }
+  .intro-title{
+    font-size: clamp(2.4rem, 7vw, 5.2rem);
+    line-height:1.08;
+    opacity:0;
+    background: linear-gradient(120deg, #fff 10%, var(--pink) 55%, var(--purple) 90%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow: 0 0 60px rgba(255,176,207,0.25);
+  }
+  .intro-by{
+    margin-top:14px; font-style:italic; font-size: clamp(0.95rem, 2vw, 1.25rem);
+    color:var(--text-dim); opacity:0; letter-spacing:0.02em;
+  }
+  .intro-est{
+    margin-top:30px; opacity:0; font-size:12px; letter-spacing:0.3em;
+    color: var(--gold); text-transform:uppercase;
+  }
+  .intro-est span{
+    display:inline-block; width:6px; height:6px; border-radius:50%;
+    background: var(--gold); margin:0 10px; vertical-align:middle;
+    box-shadow:0 0 10px var(--gold);
+  }
+
+  .open-btn{
+    margin-top:48px; opacity:0;
+    position:relative; padding:16px 42px; border-radius:999px;
+    font-family:'Inter',sans-serif; font-size:14px; letter-spacing:0.08em;
+    color:#fff; cursor:pointer; border:1px solid rgba(255,255,255,0.25);
+    background: linear-gradient(135deg, rgba(255,176,207,0.18), rgba(168,123,240,0.18));
+    backdrop-filter: blur(10px);
+    transition: transform .35s ease, box-shadow .35s ease;
+  }
+  .open-btn:hover{ transform: translateY(-2px) scale(1.02); }
+  .open-btn:focus-visible{ outline:2px solid var(--pink); outline-offset:4px; }
+  .open-btn::before{
+    content:''; position:absolute; inset:-3px; border-radius:999px; z-index:-1;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    filter: blur(14px); opacity:0.55;
+    animation: pulse-glow 2.6s ease-in-out infinite;
+  }
+  @keyframes pulse-glow{
+    0%,100%{ opacity:0.35; transform:scale(0.97); }
+    50%{ opacity:0.65; transform:scale(1.04); }
+  }
+
+  .ripple-circle{
+    position:fixed; z-index:35; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,176,207,0.35), rgba(168,123,240,0.25) 55%, transparent 80%);
+    backdrop-filter: blur(2px);
+    transform: translate(-50%,-50%) scale(0);
+    pointer-events:none;
+  }
+
+  /* ---------- Main content ---------- */
+  #main-content{ position:relative; z-index:10; opacity:0; }
+  #main-content.hidden-init{ display:none; }
+
+  .section-shell{ max-width:920px; margin:0 auto; padding:0 20px; }
+
+  header.site-header{
+    position:sticky; top:0; z-index:30;
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    background: rgba(6,9,14,0.55);
+    border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  .tulip-icon-glow{
+    filter: drop-shadow(0 0 10px rgba(255,176,207,0.65));
+    animation: sway 4s ease-in-out infinite;
+    display:inline-block;
+  }
+  @keyframes sway{
+    0%,100%{ transform: rotate(-6deg); }
+    50%{ transform: rotate(6deg); }
+  }
+
+  .eyebrow-label{
+    font-size:11px; letter-spacing:0.3em; text-transform:uppercase;
+    color: var(--text-dim);
+  }
+
+  /* ---------- Letter ---------- */
+  .letter-card{
+    border-radius:28px; padding: clamp(28px,5vw,56px);
+    position:relative; overflow:hidden;
+  }
+  .letter-card::before{
+    content:'"'; position:absolute; top:-10px; left:18px;
+    font-family:'Playfair Display', serif; font-size:160px; line-height:1;
+    color: rgba(255,255,255,0.045); pointer-events:none;
+  }
+  .letter-body p{ margin-bottom:1.15em; color:#e7e5f3; }
+  .letter-signoff{ font-family:'Cormorant Garamond', serif; font-style:italic; font-size:1.35rem; color:var(--pink); }
+
+  /* ---------- Gallery (fixed 5-photo bento) ---------- */
+  .gallery-grid{
+    display:grid; gap:14px;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 200px);
+  }
+  .gallery-item{
+    position:relative; border-radius:20px; overflow:hidden;
+    border:1.5px solid transparent;
+    background: linear-gradient(var(--bg-1), var(--bg-1)) padding-box,
+                linear-gradient(135deg, var(--pink), var(--purple)) border-box;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 18px 40px rgba(0,0,0,0.45);
+    transition: transform .5s cubic-bezier(.22,1,.36,1), box-shadow .5s ease;
+  }
+  .gallery-item:hover{
+    transform: translateY(-6px) scale(1.015);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 24px 60px rgba(255,140,190,0.18), 0 0 50px rgba(168,123,240,0.18);
+  }
+  .gallery-item img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    transition: transform .7s cubic-bezier(.22,1,.36,1), filter .5s ease;
+    filter: saturate(0.95) brightness(0.92);
+  }
+  .gallery-item:hover img{ transform: scale(1.09); filter: saturate(1.05) brightness(1); }
+  .gallery-item .cap{
+    position:absolute; left:0; right:0; bottom:0; padding:14px 16px 12px;
+    background: linear-gradient(to top, rgba(5,7,13,0.92), transparent);
+    transform: translateY(8px); opacity:0.85;
+    transition: transform .4s ease, opacity .4s ease;
+  }
+  .gallery-item:hover .cap{ transform: translateY(0); opacity:1; }
+  .gallery-item .cap p{ margin:0; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:14px; color:#f3eef8; }
+
+  .gi-1{ grid-column: 1 / 3; grid-row: 1 / 3; }
+  .gi-2{ grid-column: 3 / 5; grid-row: 1 / 2; }
+  .gi-3{ grid-column: 3 / 4; grid-row: 2 / 3; }
+  .gi-4{ grid-column: 4 / 5; grid-row: 2 / 3; }
+  .gi-5{ grid-column: 1 / 5; grid-row: 3 / 4; height:170px; }
+
+  @media (max-width: 720px){
+    .gallery-grid{ grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 150px); }
+    .gi-1{ grid-column: 1/3; grid-row: 1/3; }
+    .gi-2{ grid-column: 1/2; grid-row: 3/4; }
+    .gi-3{ grid-column: 2/3; grid-row: 3/4; }
+    .gi-4{ grid-column: 1/2; grid-row: 4/5; }
+    .gi-5{ grid-column: 2/3; grid-row: 4/5; height:auto; }
+  }
+
+  .photo-fallback{
+    width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:6px; color:var(--text-dim); font-size:12px; text-align:center; padding:10px;
+    background: linear-gradient(135deg, rgba(255,176,207,0.07), rgba(168,123,240,0.07));
+  }
+
+  /* ---------- Milestones clicker ---------- */
+  .milestone-card{ border-radius:26px; padding: clamp(26px,4vw,46px); text-align:center; }
+  .milestone-counter{
+    display:inline-block; font-family:'Cormorant Garamond', serif; font-style:italic;
+    color: var(--gold); font-size:13px; letter-spacing:0.05em; margin-top:14px;
+  }
+  .milestone-btn{
+    width:96px; height:96px; border-radius:50%; margin:0 auto;
+    display:flex; align-items:center; justify-content:center; font-size:34px;
+    background: radial-gradient(circle at 35% 30%, rgba(255,176,207,0.35), rgba(168,123,240,0.18) 60%, rgba(255,255,255,0.03));
+    border:1px solid var(--glass-border); cursor:pointer; position:relative;
+    transition: transform .3s ease;
+  }
+  .milestone-btn:hover{ transform: scale(1.06) rotate(-4deg); }
+  .milestone-btn:active{ transform: scale(0.96); }
+  .milestone-btn::after{
+    content:''; position:absolute; inset:-10px; border-radius:50%;
+    border:1px solid rgba(255,176,207,0.25);
+    animation: ring-pulse 2.8s ease-out infinite;
+  }
+  @keyframes ring-pulse{
+    0%{ transform:scale(0.9); opacity:0.7; }
+    100%{ transform:scale(1.35); opacity:0; }
+  }
+  .milestone-text{
+    min-height: 92px; display:flex; align-items:center; justify-content:center;
+    font-family:'Cormorant Garamond', serif; font-size: clamp(1.05rem, 2.4vw, 1.4rem);
+    color:#f0eefb; padding: 18px 6px;
+  }
+
+  /* ---------- Tulip bouquet (signature element) ---------- */
+  .bouquet-stage{
+    display:flex; align-items:flex-end; justify-content:center; gap:18px;
+    height:230px; margin: 10px auto 6px; position:relative;
+  }
+  .tulip{ position:relative; width:70px; height:190px; }
+  .tulip .stem{
+    position:absolute; bottom:0; left:50%; width:5px; height:120px;
+    background: linear-gradient(to top, #3c7d54, var(--stem));
+    border-radius:3px; transform:translateX(-50%);
+  }
+  .tulip .leaf{
+    position:absolute; bottom:34px; width:34px; height:14px;
+    background: linear-gradient(120deg, #3c7d54, var(--stem));
+    border-radius:0 60% 0 60%;
+  }
+  .tulip .leaf.l{ left:calc(50% - 32px); transform: rotate(18deg); }
+  .tulip .leaf.r{ left:calc(50% + 0px); transform: rotate(-18deg) scaleX(-1); }
+  .tulip .head{
+    position:absolute; top:0; left:50%; width:64px; height:78px;
+    transform: translateX(-50%) scale(0.32) translateY(8px);
+    transform-origin:bottom center;
+    transition: transform 1.5s cubic-bezier(.27,1.42,.5,1);
+    filter: drop-shadow(0 0 0 rgba(255,176,207,0));
+  }
+  .tulip.bloom .head{
+    transform: translateX(-50%) scale(1) translateY(0);
+    filter: drop-shadow(0 0 22px rgba(255,176,207,0.55));
+  }
+  .tulip .petal{
+    position:absolute; bottom:0; left:50%; width:26px; height:58px;
+    border-radius:50% 50% 42% 42% / 65% 65% 40% 40%;
+    transform-origin:bottom center;
+    background: linear-gradient(180deg, var(--pink) 0%, var(--pink-deep) 60%, #d6588b 100%);
+    opacity:0.96;
+  }
+  .tulip .petal.c{ transform: translateX(-50%) translateY(-4px); z-index:3; }
+  .tulip .petal.l{ transform: translateX(-50%) rotate(-26deg) translateY(2px); z-index:2; background: linear-gradient(180deg, var(--purple) 0%, var(--purple-deep) 60%, #8a5fd6 100%); }
+  .tulip .petal.r{ transform: translateX(-50%) rotate(26deg) translateY(2px); z-index:2; background: linear-gradient(180deg, var(--purple) 0%, var(--purple-deep) 60%, #8a5fd6 100%); }
+  .tulip:nth-child(2) .head{ transition-delay:0.15s; }
+  .tulip:nth-child(3) .head{ transition-delay:0.3s; }
+  .tulip:nth-child(2){ height:210px; }
+  .tulip:nth-child(2) .stem{ height:140px; }
+
+  .water-btn{
+    padding:14px 34px; border-radius:999px; cursor:pointer; color:#fff;
+    font-size:14px; letter-spacing:0.05em; border:1px solid var(--glass-border);
+    background: linear-gradient(135deg, rgba(168,123,240,0.22), rgba(255,176,207,0.22));
+    backdrop-filter: blur(10px); transition: transform .3s ease;
+  }
+  .water-btn:hover{ transform: translateY(-2px); }
+  .water-btn:disabled{ opacity:0.55; cursor:default; transform:none; }
+
+  .blessing-text{
+    font-family:'Cormorant Garamond', serif; font-style:italic; font-size:1.2rem;
+    color: var(--gold); opacity:0; margin-top:18px; text-align:center;
+  }
+
+  footer{ color:var(--text-dim); font-size:12px; text-align:center; }
+
+  ::selection{ background: rgba(255,176,207,0.35); }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001s !important; animation-iteration-count:1 !important; transition-duration:0.2s !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Ambient background: drifting tulips + glowing sprinkles, reacts to mouse -->
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+
+<!-- ============ INTRO SCREEN ============ -->
+<section id="intro-screen">
+  <p class="intro-eyebrow" id="intro-eyebrow">a small gift, made with care</p>
+  <h1 class="intro-title font-display" id="intro-title">Happy Birthday,<br/>Nitisha 🌷</h1>
+  <p class="intro-by font-script" id="intro-by">by Bisuddha Adhikari</p>
+  <p class="intro-est" id="intro-est">Est. <span></span> 2066</p>
+  <button id="open-btn" class="open-btn">Open with Care</button>
+</section>
+
+<!-- ============ MAIN DASHBOARD ============ -->
+<main id="main-content" class="hidden-init">
+
+  <header class="site-header">
+    <div class="section-shell flex items-center gap-3 py-5">
+      <span class="tulip-icon-glow text-2xl">🌷</span>
+      <div>
+        <h2 class="font-display text-lg sm:text-xl" style="line-height:1.2;">Happy Birthday, Nitisha!</h2>
+        <p class="eyebrow-label">Ashar 13, 2066</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="section-shell py-16 sm:py-24 flex flex-col gap-20">
+
+    <!-- ===== Letter ===== -->
+    <section data-reveal>
+      <p class="eyebrow-label mb-3 text-center">a letter for you</p>
+      <div class="letter-card glass letter-body">
+        <p>My dearest Nitisha,</p>
+        <p>If someone asked me to describe friendship in one person, I don't think I'd need more than a single name — yours.</p>
+        <p>Today marks something truly special: Ashar 13, 2066. A whole year etched into the story of who you are, and I feel genuinely lucky to have had a front-row seat to it.</p>
+        <p>You have this quiet, wonderful way of making the people around you feel safer, lighter, and more like themselves. I don't think you even notice you're doing it — it's just who you are. I've watched you turn ordinary afternoons into memories I still smile about, and hard days into ones I somehow got through, simply because you were there.</p>
+        <p>This isn't a grand declaration, or anything you need to read between the lines for — it's just me, your friend, wanting you to know how much you matter. Not in some far-off, complicated way. In the simplest way there is: you make life better just by being in it.</p>
+        <p>So here's to you, Nitisha — to every dream you're chasing, every laugh still waiting to happen, and every beautiful, unwritten chapter ahead. May this year treat you exactly as kindly as you treat everyone around you.</p>
+        <p>Happy Birthday. I hope you feel as celebrated today as you deserve to feel every day.</p>
+        <p class="letter-signoff mt-6">Always here for you,<br/>Bisuddha Adhikari</p>
+      </div>
+    </section>
+
+    <!-- ===== Gallery (fixed 5 photos) ===== -->
+    <section data-reveal>
+      <p class="eyebrow-label mb-3 text-center">moments we've made</p>
+      <h3 class="font-display text-2xl sm:text-3xl text-center mb-8">A Little Photo Album</h3>
+      <div class="gallery-grid">
+        <figure class="gallery-item gi-1">
+          <img src="photo1.jpg" alt="A favourite memory with Nitisha" onerror="this.replaceWith(fallback('🌷','photo1.jpg'))">
+          <div class="cap"><p>The day we couldn't stop laughing</p></div>
+        </figure>
+        <figure class="gallery-item gi-2">
+          <img src="photo2.jpg" alt="A favourite memory with Nitisha" onerror="this.replaceWith(fallback('☕','photo2.jpg'))">
+          <div class="cap"><p>Tea, talks &amp; too many snacks</p></div>
+        </figure>
+        <figure class="gallery-item gi-3">
+          <img src="photo3.jpg" alt="A favourite memory with Nitisha" onerror="this.replaceWith(fallback('✨','photo3.jpg'))">
+          <div class="cap"><p>That one spontaneous trip</p></div>
+        </figure>
+        <figure class="gallery-item gi-4">
+          <img src="photo4.jpg" alt="A favourite memory with Nitisha" onerror="this.replaceWith(fallback('🎈','photo4.jpg'))">
+          <div class="cap"><p>Same smiles, different years</p></div>
+        </figure>
+        <figure class="gallery-item gi-5">
+          <img src="photo5.jpg" alt="A favourite memory with Nitisha" onerror="this.replaceWith(fallback('💫','photo5.jpg'))">
+          <div class="cap"><p>Just us, being us</p></div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ===== Milestones clicker ===== -->
+    <section data-reveal>
+      <div class="milestone-card glass">
+        <p class="eyebrow-label mb-2">a little ritual</p>
+        <h3 class="font-display text-2xl sm:text-3xl mb-6">2066 Milestones</h3>
+        <div class="milestone-text font-script" id="milestone-text">Tap the tulip to unlock your first milestone.</div>
+        <button id="milestone-btn" class="milestone-btn" aria-label="Reveal a milestone">🌷</button>
+        <p class="milestone-counter" id="milestone-counter">tap to begin</p>
+      </div>
+    </section>
+
+    <!-- ===== Tulip bouquet ===== -->
+    <section data-reveal>
+      <div class="milestone-card glass">
+        <p class="eyebrow-label mb-2">a gift that grows</p>
+        <h3 class="font-display text-2xl sm:text-3xl mb-2">A Tulip For You</h3>
+        <p class="text-sm" style="color:var(--text-dim)">Every flower deserves a little care before it blooms.</p>
+        <div class="bouquet-stage" id="bouquet-stage">
+          <div class="tulip" id="t1">
+            <div class="leaf l"></div><div class="leaf r"></div>
+            <div class="stem"></div>
+            <div class="head">
+              <div class="petal l"></div><div class="petal r"></div><div class="petal c"></div>
+            </div>
+          </div>
+          <div class="tulip" id="t2">
+            <div class="leaf l"></div><div class="leaf r"></div>
+            <div class="stem"></div>
+            <div class="head">
+              <div class="petal l"></div><div class="petal r"></div><div class="petal c"></div>
+            </div>
+          </div>
+          <div class="tulip" id="t3">
+            <div class="leaf l"></div><div class="leaf r"></div>
+            <div class="stem"></div>
+            <div class="head">
+              <div class="petal l"></div><div class="petal r"></div><div class="petal c"></div>
+            </div>
+          </div>
+        </div>
+        <button id="water-btn" class="water-btn mt-2">Water the Tulips 🌷</button>
+        <p class="blessing-text" id="blessing-text">May every year ahead bloom as beautifully as this moment — Happy Birthday, Nitisha.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="pb-14 px-6">
+    <p>Made with care by Bisuddha Adhikari · Ashar 13, 2066</p>
+  </footer>
+
+</main>
+
+<script>
+/* ============================================================
+   1. AMBIENT BACKGROUND — drifting tulips + glowing sprinkles
+      Reacts subtly to mouse movement via smoothed parallax.
+   ============================================================ */
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize(){
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Mouse tracking, smoothed toward target for a gentle parallax feel
+const mouse = { x: 0, y: 0 };       // normalized -1..1
+const mouseSmooth = { x: 0, y: 0 };
+window.addEventListener('mousemove', (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = (e.clientY / window.innerHeight) * 2 - 1;
+});
+window.addEventListener('touchmove', (e) => {
+  if (!e.touches[0]) return;
+  mouse.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+  mouse.y = (e.touches[0].clientY / window.innerHeight) * 2 - 1;
+}, { passive: true });
+
+const PINKS = ['#ffb0cf', '#ff85b3', '#c9aaf2', '#f3d8a3'];
+
+// --- Tulip particles (drift slowly upward with a soft sway) ---
+class Tulip {
+  constructor(){ this.reset(true); }
+  reset(initial){
+    this.x = Math.random() * W;
+    this.y = initial ? Math.random() * H : H + 40;
+    this.size = 16 + Math.random() * 22;
+    this.depth = 0.3 + Math.random() * 0.9;     // affects parallax + speed
+    this.speed = (0.15 + Math.random() * 0.35) * this.depth;
+    this.swayAmp = 10 + Math.random() * 20;
+    this.swaySpeed = 0.4 + Math.random() * 0.6;
+    this.swayOffset = Math.random() * Math.PI * 2;
+    this.rotation = (Math.random() - 0.5) * 0.5;
+    this.opacity = 0.35 + Math.random() * 0.45;
+  }
+  update(t){
+    this.y -= this.speed;
+    this.x += Math.sin(t * this.swaySpeed + this.swayOffset) * 0.25;
+    if (this.y < -40) this.reset(false);
+  }
+  draw(t){
+    const px = this.x + mouseSmooth.x * 18 * this.depth;
+    const py = this.y + mouseSmooth.y * 10 * this.depth;
+    ctx.save();
+    ctx.globalAlpha = this.opacity;
+    ctx.translate(px, py);
+    ctx.rotate(this.rotation + Math.sin(t * this.swaySpeed + this.swayOffset) * 0.08);
+    ctx.font = `${this.size}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🌷', 0, 0);
+    ctx.restore();
+  }
+}
+
+// --- Sprinkle / sparkle particles (twinkle in place, gentle drift) ---
+class Sprinkle {
+  constructor(){ this.reset(); }
+  reset(){
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.r = 0.6 + Math.random() * 1.8;
+    this.depth = 0.2 + Math.random() * 0.8;
+    this.color = PINKS[Math.floor(Math.random() * PINKS.length)];
+    this.twinkleSpeed = 0.6 + Math.random() * 1.4;
+    this.twinkleOffset = Math.random() * Math.PI * 2;
+    this.driftY = 0.05 + Math.random() * 0.12;
+  }
+  update(){
+    this.y -= this.driftY;
+    if (this.y < -10) { this.y = H + 10; this.x = Math.random() * W; }
+  }
+  draw(t){
+    const alpha = 0.25 + Math.abs(Math.sin(t * this.twinkleSpeed + this.twinkleOffset)) * 0.6;
+    const px = this.x + mouseSmooth.x * 26 * this.depth;
+    const py = this.y + mouseSmooth.y * 16 * this.depth;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    const grad = ctx.createRadialGradient(px, py, 0, px, py, this.r * 4);
+    grad.addColorStop(0, this.color);
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(px, py, this.r * 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+const tulipCount = Math.min(22, Math.floor(W / 60));
+const sprinkleCount = Math.min(90, Math.floor(W / 14));
+const tulips = Array.from({ length: tulipCount }, () => new Tulip());
+const sprinkles = Array.from({ length: sprinkleCount }, () => new Sprinkle());
+
+let frame = 0;
+function animate(){
+  frame++;
+  const t = frame * 0.02;
+  // smooth mouse toward target (lerp) for an elegant, non-jittery parallax
+  mouseSmooth.x += (mouse.x - mouseSmooth.x) * 0.04;
+  mouseSmooth.y += (mouse.y - mouseSmooth.y) * 0.04;
+
+  ctx.clearRect(0, 0, W, H);
+  sprinkles.forEach(s => { s.update(); s.draw(t); });
+  tulips.forEach(tu => { tu.update(t); tu.draw(t); });
+
+  requestAnimationFrame(animate);
+}
+animate();
+
+/* ============================================================
+   2. INTRO SEQUENCE — fade-in text, then ripple into dashboard
+   ============================================================ */
+function fallback(emoji, name){
+  const div = document.createElement('div');
+  div.className = 'photo-fallback';
+  div.innerHTML = `<span style="font-size:26px">${emoji}</span><span>add <strong>${name}</strong> to this folder</span>`;
+  return div;
+}
+
+const introTl = gsap.timeline({ delay: 0.3 });
+introTl
+  .to('#intro-eyebrow', { opacity: 1, y: -4, duration: 0.8, ease: 'power2.out' })
+  .to('#intro-title', { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out' }, '-=0.3')
+  .from('#intro-title', { y: 18 }, '<')
+  .to('#intro-by', { opacity: 1, duration: 0.9, ease: 'power2.out' }, '-=0.5')
+  .to('#intro-est', { opacity: 1, duration: 0.9, ease: 'power2.out' }, '-=0.4')
+  .to('#open-btn', { opacity: 1, y: 0, duration: 0.9, ease: 'power2.out' }, '-=0.3')
+  .from('#open-btn', { y: 14 }, '<');
+
+document.getElementById('open-btn').addEventListener('click', (e) => {
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  // Glassmorphism ripple, expanding from the button
+  const ripple = document.createElement('div');
+  ripple.className = 'ripple-circle';
+  ripple.style.left = cx + 'px';
+  ripple.style.top = cy + 'px';
+  ripple.style.width = '40px';
+  ripple.style.height = '40px';
+  document.body.appendChild(ripple);
+
+  const maxDim = Math.max(window.innerWidth, window.innerHeight) * 2.6;
+
+  const tl = gsap.timeline();
+  tl.to(ripple, { width: maxDim, height: maxDim, duration: 1.1, ease: 'power3.inOut' })
+    .to('#intro-screen', { opacity: 0, duration: 0.6, ease: 'power2.in' }, '-=0.7')
+    .add(() => {
+      document.getElementById('intro-screen').style.display = 'none';
+      const main = document.getElementById('main-content');
+      main.classList.remove('hidden-init');
+      gsap.fromTo(main, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1, ease: 'power2.out' });
+      revealOnScroll();
+    })
+    .to(ripple, { opacity: 0, duration: 0.5 }, '-=0.2')
+    .add(() => ripple.remove());
+});
+
+/* ============================================================
+   3. SCROLL REVEAL for dashboard sections
+   ============================================================ */
+function revealOnScroll(){
+  const sections = document.querySelectorAll('[data-reveal]');
+  sections.forEach((sec, i) => {
+    gsap.set(sec, { opacity: 0, y: 30 });
+  });
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        gsap.to(entry.target, { opacity: 1, y: 0, duration: 0.9, ease: 'power2.out' });
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  sections.forEach(sec => obs.observe(sec));
+}
+
+/* ============================================================
+   4. "2066 MILESTONES" CLICKER
+   ============================================================ */
+const milestones = [
+  "Remember the time we laughed so hard over nothing that people around us started laughing too? That's the kind of joy you bring everywhere you go.",
+  "You have this rare gift of making ordinary days feel like little celebrations — thank you for sharing that gift with the people lucky enough to know you.",
+  "Every time life got loud, your calmness reminded me what real friendship sounds like — steady, kind, and always there.",
+  "Here's to the inside jokes only we understand, the playlists we've ruined for everyone else, and the memories still waiting to be made.",
+  "You've grown into someone truly extraordinary this year — and I've had a front-row seat to watch it happen. What a privilege that's been.",
+  "May this year bring you everything you quietly hope for, and the courage to chase the things you say out loud too.",
+  "If years were milestones, 2066 marks the one where the world gets to see exactly how bright you really are.",
+  "Whatever the next chapter holds — new dreams, new places, new people — I hope a little space stays reserved for our friendship."
+];
+let milestoneIndex = 0;
+const milestoneTextEl = document.getElementById('milestone-text');
+const milestoneCounterEl = document.getElementById('milestone-counter');
+
+document.getElementById('milestone-btn').addEventListener('click', () => {
+  gsap.to(milestoneTextEl, {
+    opacity: 0, y: -8, duration: 0.3, ease: 'power1.in',
+    onComplete: () => {
+      milestoneTextEl.textContent = milestones[milestoneIndex];
+      milestoneCounterEl.textContent = `milestone ${String(milestoneIndex + 1).padStart(2, '0')} / ${String(milestones.length).padStart(2, '0')}`;
+      gsap.fromTo(milestoneTextEl, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' });
+    }
+  });
+  milestoneIndex = (milestoneIndex + 1) % milestones.length;
+});
+
+/* ============================================================
+   5. VIRTUAL TULIP BOUQUET — bloom on demand
+   ============================================================ */
+const waterBtn = document.getElementById('water-btn');
+const blessingEl = document.getElementById('blessing-text');
+let bloomed = false;
+
+waterBtn.addEventListener('click', () => {
+  if (bloomed) return;
+  bloomed = true;
+  ['t1', 't2', 't3'].forEach((id, i) => {
+    setTimeout(() => document.getElementById(id).classList.add('bloom'), i * 180);
+  });
+  gsap.to(blessingEl, { opacity: 1, y: -4, duration: 1, delay: 0.9, ease: 'power2.out' });
+  waterBtn.textContent = 'Fully Bloomed 🌷';
+  waterBtn.disabled = true;
+});
+</script>
+</body>
+</html>
